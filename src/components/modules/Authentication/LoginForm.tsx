@@ -2,74 +2,68 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { useForm, type FieldValues, type SubmitHandler } from "react-hook-form"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import { useLoginMutation } from "@/redux/features/auth/auth.api"
 import { Link, useNavigate } from "react-router"
 import { toast } from "sonner"
 import config from "@/config"
 
+const loginSchema = z.object({
+  email: z.string().min(1, "Email is required").email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+})
+
+type LoginFormValues = z.infer<typeof loginSchema>
+
 export function LoginForm({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
+  const navigate = useNavigate()
+  const [login, { isLoading }] = useLoginMutation()
 
-  const form = useForm();
-  const navigate = useNavigate();
-  const [login] = useLoginMutation();
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  })
 
-
-
-  
-  const onSubmit: SubmitHandler<FieldValues> = async (data) => {
-    const date  = new Date();
-    console.log("date",date)
+  const onSubmit = async (data: LoginFormValues) => {
     try {
-      const res = await login(data).unwrap();
-      console.log(res)
-      navigate("/")
-      toast("Login successful", {
-        description: `Welcome back, ${res?.data?.user?.email}. Logged in at ${date.toLocaleString()}`,
-        action: {
-          label: "Undo",
-          onClick: () => console.log("Undo"),
-        },
+      const res = await login(data).unwrap()
+      toast.success("Login successful", {
+        description: `Welcome back, ${res?.data?.user?.email || data.email}`,
       })
-      // navigate("/")
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      navigate("/")
     } catch (err: any) {
       console.error(err)
-      if (err.data.message === "User does not exist") {
-        toast.error(err.data.message);
-        console.log(err.data.message)
+      const errorMessage = err?.data?.message || "Something went wrong"
+
+      if (errorMessage === "User is not verified") {
+        toast.error("Your account is not verified")
+        navigate("/verify", { state: { email: data.email } })
+      } else {
+        toast.error(errorMessage)
       }
-      if (err.data.message === 'Password does not match') {
-        toast.error(err.data.message);
-        console.log(err.data.message)
-
-      } else
-        if (err.data.message === 'User is not verified') {
-          toast.error("Your account is not verified");
-          console.log(err.data.message)
-
-          navigate("/verify", { state: data.email })
-        }
-
     }
   }
-  /* http://localhost:5000/api/v1/auth/google/ */
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">Login to your account</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Login to your account</h1>
         <p className="text-balance text-sm text-muted-foreground">
           Enter your email below to login to your account
         </p>
       </div>
+
       <div className="grid gap-6">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="email"
@@ -78,9 +72,9 @@ export function LoginForm({
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
+                      type="email"
                       placeholder="john@example.com"
                       {...field}
-                      value={field.value || ""}
                     />
                   </FormControl>
                   <FormMessage />
@@ -93,14 +87,21 @@ export function LoginForm({
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <div className="flex items-center justify-between">
+                    <FormLabel>Password</FormLabel>
+                    <Link
+                      to="/forgot-password"
+                      className="text-xs text-muted-foreground underline-offset-4 hover:underline"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
                   <FormControl>
                     <Input
-                      autoComplete="on"
+                      autoComplete="current-password"
                       type="password"
-                      placeholder="********"
+                      placeholder="••••••••"
                       {...field}
-                      value={field.value || ""}
                     />
                   </FormControl>
                   <FormMessage />
@@ -108,8 +109,8 @@ export function LoginForm({
               )}
             />
 
-            <Button type="submit" className="w-full">
-              Login
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Logging in..." : "Login"}
             </Button>
           </form>
         </Form>
@@ -129,9 +130,10 @@ export function LoginForm({
           Login with Google
         </Button>
       </div>
+
       <div className="text-center text-sm">
         Don&apos;t have an account?{" "}
-        <Link to="/register" replace className="underline underline-offset-4">
+        <Link to="/register" replace className="font-semibold underline underline-offset-4">
           Register
         </Link>
       </div>

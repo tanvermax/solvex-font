@@ -1,8 +1,8 @@
 "use client";
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import {
- ChevronLeft,
+  ChevronLeft,
   ChevronRight, Info, Zap, ShoppingCart
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -13,26 +13,7 @@ import { useUserInfoQuery } from '@/redux/features/auth/auth.api';
 import { usePricestockDetailsQuery } from '@/redux/features/product/product.api';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-
-interface Product {
-  _id: string;
-  "Product ID": number;
-  "*Product Name(English)": string;
-  "Product Name(Bengali) look function": string;
-  "Shop SKU": string;
-  "*Quantity": number;
-  "*Price": number;
-  "SpecialPrice": number;
-  Highlights: string;
-  images: string;
-  description: string;
-  "White Background Image"?: string;
-  images2?: string;
-  images3?: string;
-  images4?: string;
-  images5?: string;
-  image6?: string;
-}
+import type { IProductDetail, IProductVariant } from '@/redux/features/product/Product.types';
 
 const ProductDetails = () => {
   const { data: userInfo } = useUserInfoQuery(undefined);
@@ -41,19 +22,31 @@ const ProductDetails = () => {
   const { addToCart, isLoading: isAddingToCart } = useCart();
   const [quantity, setQuantity] = useState<number>(1);
   const [activeImg, setActiveImg] = useState<number>(0);
+  const [selectedVariantIdx, setSelectedVariantIdx] = useState<number>(0);
 
-  const { data: apiResponse, isLoading, refetch } = usePricestockDetailsQuery(id);
-  const product = apiResponse?.data?.[0] as Product;
-console.log(isAddingToCart);
-  const allImages = product ? Array.from(new Set([
-    product.images,
-    product["White Background Image"],
-    product.images2,
-    product.images3,
-    product.images4,
-    product.images5,
-    product.image6
-  ])).filter((img): img is string => Boolean(img)) : [];
+  const { data: product, isLoading, refetch } = usePricestockDetailsQuery(id) as {
+    data: IProductDetail | undefined;
+    isLoading: boolean;
+    refetch: () => void;
+  };
+
+  const activeVariants = useMemo(
+    () => (product?.variants || []).filter(v => v.status === 'active'),
+    [product]
+  );
+  const selectedVariant: IProductVariant | undefined = activeVariants[selectedVariantIdx];
+
+  // gallery: main product images + the selected variant's own image(s), deduped
+  const allImages = useMemo(() => {
+    if (!product) return [];
+    const imgs = [
+      product.mainImage,
+      ...(product.images || []),
+      selectedVariant?.image,
+      ...(selectedVariant?.images || []),
+    ];
+    return Array.from(new Set(imgs.filter((img): img is string => Boolean(img))));
+  }, [product, selectedVariant]);
 
   if (isLoading) {
     return (
@@ -68,20 +61,31 @@ console.log(isAddingToCart);
 
   if (!product) return <div className="p-10 text-center text-red-500 font-bold">Product not found</div>;
 
+  // price shown reflects the selected variant if one exists, otherwise the product's summary price
+  const displayPrice = selectedVariant?.price ?? product.minPrice ?? 0;
+  const displaySpecialPrice = selectedVariant?.specialPrice ?? product.specialPrice;
+  const hasDiscount = displaySpecialPrice != null;
+  const discountPercentage = hasDiscount
+    ? Math.round(((displayPrice - (displaySpecialPrice as number)) / displayPrice) * 100)
+    : 0;
+  const inStock = selectedVariant ? selectedVariant.quantity > 0 : product.inStock;
+
   const handleAddToCart = async (showToast = true) => {
     try {
       await addToCart({
         userId: userInfo?.data?._id,
         productId: product._id,
+        skuId: selectedVariant?.skuId,
         quantity: quantity,
-        price: product["SpecialPrice"] || product["*Price"],
-        title: product["*Product Name(English)"],
-        images: product.images
+        price: hasDiscount ? displaySpecialPrice : displayPrice,
+        title: product.name,
+        images: allImages,
       });
       refetch();
       if (showToast) toast.success('Added to cart!');
       return true;
     } catch (error) {
+      console.error('addToCart failed:', error); // check browser console for the real reason
       toast.error('Failed to add product');
       return false;
     }
@@ -89,12 +93,12 @@ console.log(isAddingToCart);
 
   const handleBuyNow = async () => {
     const success = await handleAddToCart(false);
-    if (success) navigate('/cart');
+    if (success) {
+      navigate('/cart'); // <-- confirm this exact path exists in your router config
+    } else {
+      toast.error('Could not proceed to checkout — please try again');
+    }
   };
-
-  const discountPercentage = product["SpecialPrice"]
-    ? Math.round(((product["*Price"] - product["SpecialPrice"]) / product["*Price"]) * 100)
-    : 0;
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-7xl animate-in fade-in duration-700">
@@ -104,8 +108,8 @@ console.log(isAddingToCart);
         <div className="space-y-6">
           <div className="relative group rounded-[2.5rem] overflow-hidden border-4 border-white shadow-2xl bg-white">
             <img
-              src={allImages[activeImg]}
-              alt={product["*Product Name(English)"]}
+              src={allImages[activeImg] || "/placeholder-image.png"}
+              alt={product.name}
               className="w-full aspect-square object-contain transition-transform duration-700 group-hover:scale-105"
             />
             {allImages.length > 1 && (
@@ -119,6 +123,9 @@ console.log(isAddingToCart);
                   <ChevronRight className="h-6 w-6" />
                 </Button>
               </div>
+            )}
+            {!inStock && (
+              <Badge variant="destructive" className="absolute top-4 left-4">Out of stock</Badge>
             )}
           </div>
 
@@ -138,23 +145,25 @@ console.log(isAddingToCart);
         <div className="flex flex-col space-y-8">
           <header className="space-y-4">
             <Badge className="bg-primary/10 text-primary border-none font-bold italic px-4">JCS EXCLUSIVE</Badge>
-            <h1 className="text-xl md:text-xl      font-semibold">
-              {product["*Product Name(English)"]}
+            <h1 className="text-xl md:text-xl font-semibold">
+              {product.name}
             </h1>
-            <p className="text-muted-foreground font-medium text-lg ">
-              {product["Product Name(Bengali) look function"]}
-            </p>
+            {product.nameBn && (
+              <p className="text-muted-foreground font-medium text-lg">
+                {product.nameBn}
+              </p>
+            )}
           </header>
 
           <div className="bg-secondary/30 p-8 rounded-[2rem] border-2 border-orange-100 flex items-center justify-between">
             <div className="flex flex-col">
-              {product["SpecialPrice"] ? (
+              {hasDiscount ? (
                 <>
-                  <span className="text-sm font-bold text-muted-foreground line-through italic">৳ {product["*Price"]}</span>
-                  <span className="text-5xl font-black text-orange-600 italic tracking-tighter">৳ {product["SpecialPrice"]}</span>
+                  <span className="text-sm font-bold text-muted-foreground line-through italic">৳ {displayPrice}</span>
+                  <span className="text-5xl font-black text-orange-600 italic tracking-tighter">৳ {displaySpecialPrice}</span>
                 </>
               ) : (
-                <span className="text-5xl font-black text-orange-600 italic tracking-tighter">৳ {product["*Price"]}</span>
+                <span className="text-5xl font-black text-orange-600 italic tracking-tighter">৳ {displayPrice}</span>
               )}
             </div>
             {discountPercentage > 0 && (
@@ -164,29 +173,89 @@ console.log(isAddingToCart);
             )}
           </div>
 
+          {/* VARIANT PICKER — only shown if the product actually has more than one variant */}
+          {activeVariants.length > 1 && (
+            <div className="space-y-3">
+              <h3 className="font-black uppercase italic text-sm tracking-widest">Options</h3>
+              <div className="flex flex-wrap gap-2">
+                {activeVariants.map((v, idx) => (
+                  <button
+                    key={v.skuId}
+                    onClick={() => { setSelectedVariantIdx(idx); setActiveImg(0); }}
+                    className={`px-4 py-2 rounded-xl border-2 text-sm font-semibold transition-all ${
+                      selectedVariantIdx === idx
+                        ? 'border-orange-500 bg-orange-50 text-orange-600'
+                        : 'border-muted text-muted-foreground'
+                    } ${v.quantity <= 0 ? 'opacity-40 line-through' : ''}`}
+                    disabled={v.quantity <= 0}
+                  >
+                    {v.combo || v.skuId}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex items-center border-2 border-muted rounded-2xl bg-background h-16">
-              <button onClick={() => setQuantity(q => q - 1)} disabled={quantity <= 1} className="px-6 h-full hover:bg-muted transition-colors">-</button>
+              <button onClick={() => setQuantity(q => Math.max(1, q - 1))} disabled={quantity <= 1} className="px-6 h-full hover:bg-muted transition-colors">-</button>
               <span className="px-6 font-black text-2xl">{quantity}</span>
               <button onClick={() => setQuantity(q => q + 1)} className="px-6 h-full hover:bg-muted transition-colors">+</button>
             </div>
 
-            <Button onClick={handleBuyNow} className="flex-[2] h-16 bg-orange-500 hover:bg-orange-600 text-white font-black text-2xl rounded-2xl uppercase italic tracking-widest shadow-xl transition-all active:scale-95">
-              <Zap className="mr-2 fill-current" /> Buy Now
+            <Button
+              onClick={handleBuyNow}
+              disabled={!inStock || isAddingToCart}
+              className="flex-[2] h-16 bg-orange-500 hover:bg-orange-600 text-white font-black text-2xl rounded-2xl uppercase italic tracking-widest shadow-xl transition-all active:scale-95"
+            >
+              <Zap className="mr-2 fill-current" /> {inStock ? 'Buy Now' : 'Out of Stock'}
             </Button>
-            
-            <Button variant="outline" onClick={() => handleAddToCart(true)} className="flex-1 h-16 border-2 border-primary text-primary font-bold rounded-2xl">
+
+            <Button
+              variant="outline"
+              onClick={() => handleAddToCart(true)}
+              disabled={!inStock || isAddingToCart}
+              className="flex-1 h-16 border-2 border-primary text-primary font-bold rounded-2xl"
+            >
               <ShoppingCart className="mr-2" /> + Cart
             </Button>
           </div>
 
-          <div className="space-y-4 border-t pt-8">
-            <h3 className="font-black uppercase italic text-sm tracking-widest flex items-center gap-2">
-              <Info className="text-orange-500" /> Specifications
-            </h3>
-            <div className="prose prose-sm max-w-none text-muted-foreground italic font-medium"
-              dangerouslySetInnerHTML={{ __html: product.Highlights }} />
-          </div>
+          {product.highlights && (
+            <div className="space-y-4 border-t pt-8">
+              <h3 className="font-black uppercase italic text-sm tracking-widest flex items-center gap-2">
+                <Info className="text-orange-500" /> Highlights
+              </h3>
+              <div className="prose prose-sm max-w-none text-muted-foreground italic font-medium"
+                dangerouslySetInnerHTML={{ __html: product.highlights }} />
+            </div>
+          )}
+
+          {product.specs && Object.keys(product.specs).length > 0 && (
+            <div className="space-y-4 border-t pt-8">
+              <h3 className="font-black uppercase italic text-sm tracking-widest flex items-center gap-2">
+                <Info className="text-orange-500" /> Specifications
+              </h3>
+              <table className="w-full text-sm">
+                <tbody>
+                  {Object.entries(product.specs).map(([key, value]) => (
+                    <tr key={key} className="border-b">
+                      <td className="py-2 pr-4 font-semibold text-muted-foreground">{key}</td>
+                      <td className="py-2">{value}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {product.description && (
+            <div className="space-y-4 border-t pt-8">
+              <h3 className="font-black uppercase italic text-sm tracking-widest">Description</h3>
+              <div className="prose prose-sm max-w-none text-muted-foreground"
+                dangerouslySetInnerHTML={{ __html: product.description }} />
+            </div>
+          )}
         </div>
       </div>
     </div>

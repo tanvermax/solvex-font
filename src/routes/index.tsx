@@ -20,6 +20,7 @@ import OrderTrack from "@/pages/User/OrderTrack/Ordertack";
 import Help from "@/pages/Help/Help";
 import HomeShope from "@/components/layout/HomeShope/HomeShope";
 import OrderSuccessPage from "@/components/layout/OrderSuccess/OrderSuccessPage";
+import EditProduct from "@/components/layout/AdminLayoute/AddProduct/EditProduct";
 
 
 const router = createBrowserRouter([
@@ -49,12 +50,16 @@ const router = createBrowserRouter([
                 Component: Home,
             },
             {
-                path:"pricestocks/:id",
+                path:"alldata/:id",
                 Component:ProductDetails
             },
             {
                 path:"ordertrack",
                 Component:OrderTrack
+            },
+            {
+                path: "/admin/products/edit/:id",
+                Component: EditProduct,
             },
             {
                 path:"help",
