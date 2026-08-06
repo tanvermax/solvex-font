@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Link, useSearchParams } from "react-router";
+import {  useSearchParams } from "react-router";
 import { 
   FileText, 
   Upload, 
@@ -10,7 +10,6 @@ import {
   CheckCircle2, 
   ShieldCheck, 
   Clock, 
-  HelpCircle, 
   Sparkles,
   Building2,
   PhoneCall

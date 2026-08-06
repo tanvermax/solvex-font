@@ -5,16 +5,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router";
 import { 
   Search, 
-  Truck, 
-  PackageCheck, 
-  Clock, 
+  Truck,   Clock, 
   MapPin, 
   CheckCircle2, 
-  FileText, 
+
   PhoneCall, 
   AlertCircle, 
   Sparkles,
-  Building2,
+
   Download,
   Calendar
 } from "lucide-react";

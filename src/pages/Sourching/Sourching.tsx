@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router";
 import { 
   Globe2, 
   ShieldCheck, 
@@ -10,11 +9,8 @@ import {
   Send, 
   CheckCircle2, 
   Sparkles, 
-  Building2, 
   Factory, 
   Truck, 
-  Search, 
-  Clock, 
   BadgeCheck 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
