@@ -21,6 +21,11 @@ import Help from "@/pages/Help/Help";
 import HomeShope from "@/components/layout/HomeShope/HomeShope";
 import OrderSuccessPage from "@/components/layout/OrderSuccess/OrderSuccessPage";
 import EditProduct from "@/components/layout/AdminLayoute/AddProduct/EditProduct";
+import ProductsPage from "@/pages/Products/ProductsPage";
+import SourcingPage from "@/pages/Sourching/Sourching";
+import IndustriesPage from "@/pages/IndustriesPage/IndustriesPage";
+import RFQPage from "@/pages/Rfq/Rfq";
+import TrackShipmentPage from "@/pages/TrackShipment/TrackShipmentPage";
 
 
 const router = createBrowserRouter([
@@ -44,7 +49,23 @@ const router = createBrowserRouter([
             {
                 path: "thankyou",
                 Component: OrderSuccessPage,
-            }, 
+            },
+            {
+                path:"products",
+                Component:ProductsPage
+            },
+            {
+                path:"sourcing",
+                Component:SourcingPage
+            },
+            {
+                path:"industries",
+                Component:IndustriesPage
+            },
+             {
+                path:"rfq",
+                Component:RFQPage
+            },
             {
                 path: "/",
                 Component: Home,
@@ -55,7 +76,7 @@ const router = createBrowserRouter([
             },
             {
                 path:"ordertrack",
-                Component:OrderTrack
+                Component:TrackShipmentPage
             },
             {
                 path: "/admin/products/edit/:id",

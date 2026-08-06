@@ -8,8 +8,7 @@ import {
   Package, 
   Wrench, 
   Zap, 
-  Boxes, 
-  Briefcase, 
+
   Sparkles,
   ArrowUpRight 
 } from "lucide-react";

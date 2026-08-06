@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+// import { useEffect, useState, useCallback } from "react";
 import { Link, useLocation } from "react-router";
 import { 
   FileText, 
@@ -27,7 +27,7 @@ import {
 // import { useUserInfoQuery } from "@/redux/features/auth/auth.api";
 
 const NAVIGATION_LINKS = [
-  { href: "#", label: "Products", icon: Layers },
+  { href: "/products", label: "Products", icon: Layers },
   { href: "/sourcing", label: "Sourcing", icon: PackageSearch },
   { href: "/industries", label: "Industries", icon: Building2 },
   { href: "/rfq", label: "Request Quote", icon: FileText },
@@ -36,33 +36,34 @@ const NAVIGATION_LINKS = [
 
 export default function FloatingNavbar() {
   // const { data: userData, isLoading: isUserLoading } = useUserInfoQuery(undefined);
-  const [inquiryCount, setInquiryCount] = useState<number>(0);
+  // const [inquiryCount, setInquiryCount] = useState<number>(0);
   const location = useLocation();
 
-  const updateInquiryCartView = useCallback(() => {
-    try {
-      const localItems = JSON.parse(localStorage.getItem("inquiryCart") || "[]");
-      setInquiryCount(Array.isArray(localItems) ? localItems.length : 0);
-    } catch {
-      setInquiryCount(0);
-    }
-  }, []);
+  // const updateInquiryCartView = useCallback(() => {
+  //   try {
+  //     const localItems = JSON.parse(localStorage.getItem("inquiryCart") || "[]");
+  //     setInquiryCount(Array.isArray(localItems) ? localItems.length : 0);
+  //   } catch {
+  //     setInquiryCount(0);
+  //   }
+  // }, []);
 
-  useEffect(() => {
-    updateInquiryCartView();
-    window.addEventListener("cartUpdated", updateInquiryCartView);
-    window.addEventListener("storage", updateInquiryCartView);
+  // useEffect(() => {
+  //   updateInquiryCartView();
+  //   window.addEventListener("cartUpdated", updateInquiryCartView);
+  //   window.addEventListener("storage", updateInquiryCartView);
 
-    return () => {
-      window.removeEventListener("cartUpdated", updateInquiryCartView);
-      window.removeEventListener("storage", updateInquiryCartView);
-    };
-  }, [updateInquiryCartView]);
+  //   return () => {
+  //     window.removeEventListener("cartUpdated", updateInquiryCartView);
+  //     window.removeEventListener("storage", updateInquiryCartView);
+  //   };
+  // }, [updateInquiryCartView]);
+
 
   return (
     <header className="fixed top-4 left-0 right-0 z-50 px-4">
       {/* Floating Curved Pill Container */}
-      <div className="max-w-6xl shadow-[-1px_5px_52px_10px_rgba(0,_0,_0,_0.3)] mx-auto rounded-full bg-background/80 dark:bg-slate-950/90 backdrop-blur-[2px] border border-border/80  shadow-black/10 px-4 py-2 transition-all">
+      <div className="max-w-7xl shadow-[-1px_5px_52px_10px_rgba(0,_0,_0,_0.3)] mx-auto rounded-full bg-background/80 dark:bg-slate-950/90 backdrop-blur-[2px] border border-border/80  shadow-black/10 px-4 py-2 transition-all">
         <div className="flex items-center justify-between gap-2 md:gap-4">
           
           {/* Brand Logo & Mobile Trigger */}
@@ -125,7 +126,7 @@ export default function FloatingNavbar() {
                   to={link.href}
                   className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
                     isActive
-                      ? "text-foreground font-bold bg-muted/80 shadow-sm"
+                      ? "text-foreground font-bold bg-muted/10  shadow-[4px_9px_35px_20px_rgba(59,_130,_300,_0.15)]"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                   }`}
                 >
