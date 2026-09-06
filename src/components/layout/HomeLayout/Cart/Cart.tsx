@@ -11,12 +11,12 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAllOrderQuery, useConfirmOrderMutation, useConfirmOrdernonUserMutation, useDeleteOrderMutation, useUpdateOrderMutation } from '@/redux/features/order/Order.api';
 import { toast } from 'sonner';
-import { useUserInfoQuery } from '@/redux/features/auth/auth.api';
+import { useGetMeQuery } from '@/redux/features/auth/auth.api';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router';
 
 const CartPage = () => {
-    const { data: userInfo } = useUserInfoQuery(undefined);
+    const { data: userInfo } = useGetMeQuery(undefined);
     const { data: response, isLoading, refetch } = useAllOrderQuery(undefined);
     const [updateOrder] = useUpdateOrderMutation();
     const [confirmOrder] = useConfirmOrderMutation();

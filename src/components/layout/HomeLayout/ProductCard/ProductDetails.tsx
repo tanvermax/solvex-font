@@ -9,14 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from '@/redux/hooks/useCart';
 import { toast } from 'sonner';
-import { useUserInfoQuery } from '@/redux/features/auth/auth.api';
+import { useGetMeQuery } from '@/redux/features/auth/auth.api';
 import { usePricestockDetailsQuery } from '@/redux/features/product/product.api';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { IProductDetail, IProductVariant } from '@/redux/features/product/Product.types';
 
 const ProductDetails = () => {
-  const { data: userInfo } = useUserInfoQuery(undefined);
+  const { data: userInfo } = useGetMeQuery(undefined);
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addToCart, isLoading: isAddingToCart } = useCart();

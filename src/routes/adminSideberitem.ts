@@ -1,20 +1,22 @@
 import AddProduct from "@/components/layout/AdminLayoute/AddProduct/AddProduct";
 import AdminOrderTrack from "@/components/layout/AdminLayoute/AdminOrderTrack/AdminOrderTrack";
+import AdminQuotationManagement from "@/components/layout/AdminLayoute/AdminQuotationManagement/AdminQuotationManagement";
+import AdminShipmentTracking from "@/components/layout/AdminLayoute/AdminShipmentTracking/AdminShipmentTracking";
 import Allproduct from "@/components/layout/AdminLayoute/Allproduct";
 import OrderviewAdmin from "@/components/layout/AdminLayoute/OrderviewAdmin/OrderviewAdmin";
 import AdminOverviewPage from "@/components/layout/AdminLayoute/Overview/Adminoverviewpage";
+
 import type { ISidebarItem } from "@/types";
 
-// Lucide Icons থেকে মানানসই আইকনগুলো ইমপোর্ট করা হলো
 import { 
   LayoutDashboard, 
   ChartArea,
   ShoppingBag, 
   PlusCircle, 
-  ClipboardList 
+  ClipboardList,
+  Truck,
+  FileSpreadsheet
 } from "lucide-react";
-
-
 
 export const adminSidebarItem: ISidebarItem[] = [
   {
@@ -22,36 +24,47 @@ export const adminSidebarItem: ISidebarItem[] = [
     url: "#",
     items: [
       {
-        title: "Dashboard",
+        title: "Overview Stats",
         url: "/admin/dashboard",
         component: AdminOverviewPage,
-        icon: LayoutDashboard, // ড্যাশবোর্ডের জন্য গ্রিড আইকন
+        icon: LayoutDashboard,
+      },
+      {
+        title: "Quotation Requests (RFQ)",
+        url: "/admin/quotations",
+        component: AdminQuotationManagement, // B2B SLA Price Quote দেয়ার পেজ
+        icon: FileSpreadsheet,
+      },
+      {
+        title: "Fleet & Tracking Update",
+        url: "/admin/shipments",
+        component: AdminShipmentTracking, // Tracking ID তৈরি ও স্ট্যাটাস চেঞ্জের পেজ
+        icon: Truck,
       },
       {
         title: "Order Overview",
         url: "/admin/order-overview",
         component: OrderviewAdmin,
-        icon: ChartArea, // নতুন প্রোডাক্ট অ্যাড করার জন্য প্লাস আইকন
+        icon: ChartArea,
       },
       {
-        title: "All Product",
-        url: "/admin/users", // নোটিফিকেশন: আপনার এখানে URL এ /admin/users দেওয়া, প্রয়োজন হলে /admin/products করতে পারেন
+        title: "All Products",
+        url: "/admin/products", // URL /admin/products সেট করা ভালো
         component: Allproduct,
-        icon: ShoppingBag, // প্রোডাক্ট লিস্টের জন্য শপিং ব্যাগ আইকন
+        icon: ShoppingBag,
       },
       {
-        title: "Order",
-        url: "/admin/order",
+        title: "Orders History",
+        url: "/admin/orders",
         component: AdminOrderTrack,
-        icon: ClipboardList, // অর্ডারের জন্য ক্লিপবোর্ড/লিস্ট আইকন
+        icon: ClipboardList,
       },
       {
-        title: "Add Product",
+        title: "Add New Product",
         url: "/admin/add-product",
         component: AddProduct,
-        icon: PlusCircle, // নতুন প্রোডাক্ট অ্যাড করার জন্য প্লাস আইকন
+        icon: PlusCircle,
       },
-      
     ],
   },
 ];

@@ -13,10 +13,10 @@ import {
 import Logo from "@/assets/icons/logo"
 import { Link, useLocation } from "react-router" // অ্যাক্টিভ রুট চেনার জন্য useLocation আনা হয়েছে
 import { getSidebarItems } from "@/utils/getSidebaritem"
-import { useUserInfoQuery } from "@/redux/features/auth/auth.api"
+import { useGetMeQuery } from "@/redux/features/auth/auth.api"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { data: userData } = useUserInfoQuery(undefined);
+  const { data: userData } = useGetMeQuery(undefined);
   const location = useLocation(); // বর্তমান ইউআরএল ট্র্যাক করার জন্য
 
   const data = {

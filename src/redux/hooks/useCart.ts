@@ -1,5 +1,5 @@
 import { useOrderMutation } from "../features/order/Order.api";
-import { useUserInfoQuery } from "../features/auth/auth.api";
+import { useGetMeQuery } from "../features/auth/auth.api";
 import { toast } from "sonner";
 
 interface AddToCartParams {
@@ -16,7 +16,7 @@ interface AddToCartParams {
 export const useCart = () => {
 
     const [addtocart, { isLoading, error }] = useOrderMutation();
-    const { data: userInfo, isLoading: isUserLoading, refetch } = useUserInfoQuery(undefined);
+    const { data: userInfo, isLoading: isUserLoading, refetch } = useGetMeQuery(undefined);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     // const navigate = useNavigate();
