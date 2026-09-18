@@ -53,13 +53,13 @@ export const AdminRoute = () => {
   
   // 🔥 Debug logs
   useEffect(() => {
-    console.log("🔍 AdminRoute Debug:", {
-      user,
-      isAuthenticated,
-      hasToken,
-      userRole: user?.role,
-      isLoading
-    });
+    // console.log("🔍 AdminRoute Debug:", {
+    //   user,
+    //   isAuthenticated,
+    //   hasToken,
+    //   userRole: user?.role,
+    //   isLoading
+    // });
   }, [user, isAuthenticated, hasToken, isLoading]);
 
   useEffect(() => {

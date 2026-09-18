@@ -82,7 +82,7 @@ export default function HeroSection() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="lg:col-span-6 relative flex justify-center items-center"
+            className="lg:col-span-6 relative flex justify-end items-center"
           >
             <div className="relative w-full max-w-lg aspect-square rounded-3xl bg-gradient-to-tr from-[#0F52BA]/10 via-slate-200/40 to-[#FF5500]/10 dark:from-slate-900 dark:to-slate-800 p-6 border border-white/60 dark:border-slate-800 backdrop-blur-2xl shadow-2xl flex flex-col justify-between overflow-hidden">
               <div className="absolute top-10 right-10 size-40 bg-[#0F52BA]/20 rounded-full blur-3xl pointer-events-none" />

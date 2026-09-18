@@ -7,12 +7,11 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { useLoginMutation } from "@/redux/features/auth/auth.api"
-import { Link, useNavigate, useLocation } from "react-router"
+import { Link, useNavigate } from "react-router"
 import { toast } from "sonner"
 import config from "@/config"
 import { useAppDispatch } from "@/redux/hook"
 import { setUser } from "@/redux/features/auth/auth.slice"
-import { useEffect } from "react"
 
 const loginSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email address"),
@@ -26,12 +25,11 @@ export function LoginForm({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   const navigate = useNavigate();
-  const location = useLocation();
   const dispatch = useAppDispatch();
   const [login, { isLoading }] = useLoginMutation();
 
   const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(loginSchema) as any,
     defaultValues: {
       email: "",
       password: "",

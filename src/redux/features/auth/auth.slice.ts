@@ -15,7 +15,7 @@ const loadAuthFromStorage = (): Partial<AuthState> => {
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
     
-    console.log("🔍 Loading auth from localStorage:", { token, userStr });
+    // console.log("🔍 Loading auth from localStorage:", { token, userStr });
     
     if (token && userStr) {
       const user = JSON.parse(userStr);
@@ -52,7 +52,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, action: PayloadAction<{ user: IUser; token: string }>) => {
-      console.log("🔥 setUser called with:", action.payload);
+      // console.log("🔥 setUser called with:", action.payload);
       
       state.user = action.payload.user;
       state.token = action.payload.token;
@@ -69,7 +69,7 @@ const authSlice = createSlice({
       state.isLoading = action.payload;
     },
     logout: (state) => {
-      console.log("🔥 logout called");
+      // console.log("🔥 logout called");
       
       state.user = null;
       state.token = null;
@@ -87,7 +87,7 @@ const authSlice = createSlice({
           .replace(/=.*/, `=;expires=${new Date(0).toUTCString()};path=/`);
       });
       
-      console.log("✅ Logout: Auth state cleared");
+      // console.log("✅ Logout: Auth state cleared");
     },
     // 🔥 নতুন: localStorage থেকে রিলোড করার জন্য
     rehydrate: (state) => {
@@ -97,7 +97,7 @@ const authSlice = createSlice({
         state.token = saved.token;
         state.isAuthenticated = true;
         state.isLoading = false;
-        console.log("✅ Auth rehydrated from localStorage");
+        // console.log("✅ Auth rehydrated from localStorage");
       }
     },
   },

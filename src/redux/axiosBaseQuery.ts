@@ -1,11 +1,9 @@
-
 import { axiosInstance } from '@/lib/axios'
 import type { BaseQueryFn } from '@reduxjs/toolkit/query'
 import type { AxiosRequestConfig, AxiosError } from 'axios'
 
 const axiosBaseQuery =
-  (
-  ): BaseQueryFn<
+  (): BaseQueryFn<
     {
       url: string
       method?: AxiosRequestConfig['method']
@@ -18,14 +16,18 @@ const axiosBaseQuery =
   > =>
   async ({ url, method, data, params, headers }) => {
     try {
-    
+      // 🔥 FIX: LocalStorage থেকে Token নিয়ে হেডারে পাস করা হচ্ছে
+      const token = localStorage.getItem("token");
+
       const result = await axiosInstance({
         url: url,
         method,
         data,
         params,
-        headers,
-        
+        headers: {
+          ...headers,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
       return { data: result.data };
     } catch (axiosError) {
@@ -39,5 +41,4 @@ const axiosBaseQuery =
     }
   };
 
-  export default axiosBaseQuery
-
+export default axiosBaseQuery;

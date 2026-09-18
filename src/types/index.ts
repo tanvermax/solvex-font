@@ -16,7 +16,7 @@ export interface ISidebarItem {
   items: {
     title: string;
     url: string;
-    icon?: string | ComponentType; // icon can be a string or a React component
+    icon?: string | ComponentType | any; // icon can be a string or a React component
     component: ComponentType;
   }[];
 }

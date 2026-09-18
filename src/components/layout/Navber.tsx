@@ -1,6 +1,6 @@
 "use client";
 
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { 
   Layers, 
   LogIn, 
@@ -17,6 +17,8 @@ import {
   User,
   Settings,
   HelpCircle,
+  Loader2,
+  LogOut,
 } from "lucide-react";
 
 import Logo from "@/assets/icons/logo";
@@ -24,10 +26,12 @@ import { ModeToggle } from "./ModeToggler";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import { useAppSelector } from "@/redux/hook";
-import { useCurrentUser, useIsAuthenticated } from "@/redux/features/auth/auth.slice";
+import { useAppDispatch, useAppSelector } from "@/redux/hook";
+import { logout, useCurrentUser, useIsAuthenticated } from "@/redux/features/auth/auth.slice";
 import { Skeleton } from "@/components/ui/skeleton";
 import UserMenu from "../navbar-components/user-menu";
+import { authApi, useLogoutMutation } from "@/redux/features/auth/auth.api";
+import { toast } from "react-toastify";
 
 const NAVIGATION_LINKS = [
   { href: "/products", label: "Products", icon: Layers },
@@ -65,6 +69,40 @@ export default function FloatingNavbar() {
   const user = useAppSelector(useCurrentUser);
   const isAuthenticated = useAppSelector(useIsAuthenticated);
 
+  const [logoutMutation, { isLoading }] = useLogoutMutation();
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
+
+  console.log(isAuthenticated);
+  const handleLogout = async () => {
+    try {
+      await logoutMutation(undefined).unwrap();
+      dispatch(logout());
+      dispatch(authApi.util.resetApiState());
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, `=;expires=${new Date(0).toUTCString()};path=/`);
+      });
+      
+      toast.success("Logged out successfully");
+      navigate("/");
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Logout error:", error);
+      dispatch(logout());
+      dispatch(authApi.util.resetApiState());
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      toast.warning("Logged out locally");
+      navigate("/");
+      window.location.href = "/";
+    }
+  };
   // Set mounted state to avoid hydration mismatch
   useEffect(() => {
     setIsMounted(true);
@@ -495,7 +533,27 @@ export default function FloatingNavbar() {
                   <div className="flex items-center justify-between px-2">
                     <span className="text-xs font-medium text-muted-foreground">Theme</span>
                     <ModeToggle />
+                    
                   </div>
+                  <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleLogout}
+                              disabled={isLoading}
+                              className="text-destructive hover:bg-destructive/10 hover:text-destructive rounded-xl px-3 py-1.5 h-auto text-xs font-medium gap-1.5"
+                            >
+                              {isLoading ? (
+                                <>
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                  Logging out...
+                                </>
+                              ) : (
+                                <>
+                                  <LogOut className="h-3.5 w-3.5" />
+                                  Logout
+                                </>
+                              )}
+                            </Button>
                 </div>
               </div>
             </motion.div>

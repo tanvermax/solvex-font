@@ -29,7 +29,7 @@ export default function Veryfy() {
     })
 
     const form = useForm<z.infer<typeof FormSchema>>({
-        resolver: zodResolver(FormSchema),
+        resolver: zodResolver(FormSchema) as any,
         defaultValues: {
             pin: "",
         },
