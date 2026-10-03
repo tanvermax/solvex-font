@@ -2,99 +2,166 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router";
-import { 
-  Search, 
-  SlidersHorizontal, 
-  FileText, 
-  ShoppingCart, 
-  Star, 
-  CheckCircle2, 
+import { Link, useSearchParams } from "react-router";
+import {
+  Search,
+  SlidersHorizontal,
   Sparkles,
   ArrowUpDown,
-  
+  Loader2,
+  Package,
+  X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-// Mock B2B Catalog Data
-const CATEGORIES = ["All Supplies", "Safety & PPE", "Packaging", "Tools & Equipment", "Electrical"];
-
-const PRODUCTS = [
-  {
-    id: "prod-1",
-    name: "Heavy Duty Industrial Safety Helmet (ANSI Approved)",
-    category: "Safety & PPE",
-    price: "৳ 450",
-    unit: "per pc",
-    moq: "50 Pcs MOQ",
-    rating: "4.9",
-    reviews: 128,
-    badge: "Best Seller",
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=600&auto=format&fit=crop",
-    tierDiscount: "Up to 15% off on 500+ pcs",
-  },
-  {
-    id: "prod-2",
-    name: "3-Ply Corrugated Heavy Duty Shipping Packaging Boxes",
-    category: "Packaging",
-    price: "৳ 28",
-    unit: "per box",
-    moq: "500 Pcs MOQ",
-    rating: "4.8",
-    reviews: 94,
-    badge: "Bulk Stock",
-    image: "https://images.unsplash.com/photo-1553413077-190dd305871c?q=80&w=600&auto=format&fit=crop",
-    tierDiscount: "Custom Printing Available",
-  },
-  {
-    id: "prod-3",
-    name: "Automated Digital Precision Vernier Caliper (0-150mm)",
-    category: "Tools & Equipment",
-    price: "৳ 2,800",
-    unit: "per set",
-    moq: "5 Sets MOQ",
-    rating: "5.0",
-    reviews: 67,
-    badge: "Precision Tool",
-    image: "https://images.unsplash.com/photo-1581092335397-9583fe92d232?q=80&w=600&auto=format&fit=crop",
-    tierDiscount: "Free Calibration Cert.",
-  },
-  {
-    id: "prod-4",
-    name: "High-Tension Industrial Electric Copper Cable (100m Roll)",
-    category: "Electrical",
-    price: "৳ 12,500",
-    unit: "per roll",
-    moq: "2 Rolls MOQ",
-    rating: "4.9",
-    reviews: 210,
-    badge: "ISO Certified",
-    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=600&auto=format&fit=crop",
-    tierDiscount: "Direct OEM Warranty",
-  },
-];
+// 🔥 API Hooks
+import { useGetAllProductsQuery } from "@/redux/features/product/product.api";
+import { useGetAllCategoriesQuery } from "@/redux/features/category/category.api";
+import { useGetSubcategoriesByCategoryQuery } from "@/redux/features/subcategory/subcategory.api";
+import ProductCard from "./ProductCard";
 
 export default function ProductsPage() {
-  const [selectedCategory, setSelectedCategory] = useState("All Supplies");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const filteredProducts = PRODUCTS.filter((p) => {
-    const matchesCategory = selectedCategory === "All Supplies" || p.category === selectedCategory;
-    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+  // 🔥 State
+  const [selectedCategory, setSelectedCategory] = useState(
+    searchParams.get("category") || "ALL"
+  );
+  const [selectedSubcategory, setSelectedSubcategory] = useState(
+    searchParams.get("subcategory") || "ALL"
+  );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("createdAt-desc");
+  const [priceRange, setPriceRange] = useState({ min: "", max: "" });
+  const [page, setPage] = useState(1);
+  const [showFilters, setShowFilters] = useState(false);
+
+  // 🔥 API — Categories
+  const { data: categoriesData } = useGetAllCategoriesQuery();
+  const categories = categoriesData?.data || [];
+
+  // 🔥 API — Subcategories (based on selected category)
+  const { data: subcategoriesData } = useGetSubcategoriesByCategoryQuery(
+    selectedCategory !== "ALL" ? selectedCategory : "",
+    { skip: selectedCategory === "ALL" }
+  );
+  const subcategories = subcategoriesData?.data || [];
+
+  // 🔥 API — Products
+  const [sortByField, sortOrder] = sortBy.split("-");
+
+  const {
+    data: productsData,
+    isLoading,
+    isFetching,
+  } = useGetAllProductsQuery({
+    searchTerm: searchQuery || undefined,
+    categoryId: selectedCategory !== "ALL" ? selectedCategory : undefined,
+    subcategoryId:
+      selectedSubcategory !== "ALL" ? selectedSubcategory : undefined,
+    minPrice: priceRange.min ? Number(priceRange.min) : undefined,
+    maxPrice: priceRange.max ? Number(priceRange.max) : undefined,
+    page,
+    limit: 12,
+    sortBy: sortByField,
+    sortOrder: sortOrder as "asc" | "desc",
   });
+
+  const products = productsData?.data || [];
+  const meta = productsData?.meta;
+
+  // 🔥 Category helper
+  const getCategoryName = (product: any) => {
+    if (typeof product.categoryId === "object") {
+      return product.categoryId.name;
+    }
+    return (
+      categories.find((c) => c._id === product.categoryId)?.name || "Uncategorized"
+    );
+  };
+
+  const getSubcategoryName = (product: any) => {
+    if (typeof product.subcategoryId === "object") {
+      return product.subcategoryId.name;
+    }
+    return "N/A";
+  };
+
+  // 🔥 Handle Category Change
+  const handleCategoryChange = (catId: string) => {
+    setSelectedCategory(catId);
+    setSelectedSubcategory("ALL");
+    setPage(1);
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      if (catId === "ALL") newParams.delete("category");
+      else newParams.set("category", catId);
+      newParams.delete("subcategory");
+      return newParams;
+    });
+  };
+
+  // 🔥 Handle Subcategory Change
+  const handleSubcategoryChange = (subId: string) => {
+    setSelectedSubcategory(subId);
+    setPage(1);
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      if (subId === "ALL") newParams.delete("subcategory");
+      else newParams.set("subcategory", subId);
+      return newParams;
+    });
+  };
+
+  // 🔥 Clear All Filters
+  const clearAllFilters = () => {
+    setSelectedCategory("ALL");
+    setSelectedSubcategory("ALL");
+    setSearchQuery("");
+    setPriceRange({ min: "", max: "" });
+    setSortBy("createdAt-desc");
+    setPage(1);
+    setSearchParams({});
+  };
+
+  const hasActiveFilters =
+    selectedCategory !== "ALL" ||
+    selectedSubcategory !== "ALL" ||
+    searchQuery ||
+    priceRange.min ||
+    priceRange.max;
+
+  // 🔥 Loading State
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background pt-24 pb-20">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <p className="text-muted-foreground">Loading products...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pt-24 pb-20 relative overflow-hidden">
-      
-      {/* Background Ambient Glows */}
+      {/* Background Glows */}
       <div className="absolute top-20 left-10 w-96 h-96 bg-primary/5 rounded-full blur-[160px] pointer-events-none" />
       <div className="absolute top-1/3 right-10 w-96 h-96 bg-[#FF5500]/5 rounded-full blur-[160px] pointer-events-none" />
 
       <div className="container mx-auto px-4 md:px-6 relative z-10">
-        
-        {/* ================= 1. FIRST SCREEN HERO & TYPOGRAPHY HEADER ================= */}
+        {/* ================= 1. HERO HEADER ================= */}
         <div className="max-w-3xl mx-auto text-center space-y-3 mb-10 md:mb-14">
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#FF5500]/10 border border-[#FF5500]/20 text-[#FF5500] text-[11px] font-extrabold uppercase tracking-widest">
             <Sparkles className="size-3.5 fill-current" />
@@ -102,194 +169,339 @@ export default function ProductsPage() {
           </div>
 
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground leading-[1.15]">
-            Enterprise Industrial <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-primary to-[#FF5500]">Supplies Catalog</span>
+            Enterprise Industrial{" "}
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-600 via-primary to-[#FF5500]">
+              Supplies Catalog
+            </span>
           </h1>
 
           <p className="text-xs sm:text-sm text-muted-foreground font-normal leading-relaxed max-w-2xl mx-auto">
-            Direct factory procurement with tiered wholesale pricing, certified quality standards, and 24-hour quotation turnarounds.
+            Direct factory procurement with tiered wholesale pricing, certified
+            quality standards, and 24-hour quotation turnarounds.
           </p>
         </div>
 
-        {/* ================= 2. HIGH-CONVERSION SEARCH & FILTER BAR ================= */}
-        <div className="bg-card/70 backdrop-blur-xl border border-border/70 rounded-2xl p-3 md:p-4 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] mb-8 md:mb-12 space-y-3">
-          
+        {/* ================= 2. SEARCH & FILTER BAR ================= */}
+        <div className="bg-card/70 backdrop-blur-xl border border-border/70 rounded-2xl p-3 md:p-4 shadow-lg mb-8 md:mb-12 space-y-3">
           <div className="flex flex-col md:flex-row items-center gap-3">
-            {/* Search Bar */}
+            {/* Search */}
             <div className="relative w-full md:flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search products, specifications, or SKU..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-background border border-border/60 focus:border-[#FF5500] rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-foreground focus:outline-none transition-colors placeholder:text-muted-foreground/60"
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full bg-background border border-border/60 focus:border-[#FF5500] rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm focus:outline-none transition-colors"
               />
             </div>
 
-            {/* Quick Actions */}
-            <div className="flex items-center gap-2 w-full md:w-auto shrink-0 justify-between">
-              <Button variant="outline" size="sm" className="h-10 text-xs font-semibold rounded-xl border-border/60 gap-1.5 flex-1 md:flex-initial">
-                <SlidersHorizontal className="size-3.5 text-[#FF5500]" />
-                <span>Filters</span>
-              </Button>
+            {/* Sort + Filter */}
+            <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="h-10 text-xs font-semibold rounded-xl border-border/60 w-full md:w-45">
+                  <ArrowUpDown className="size-3.5 mr-2" />
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="createdAt-desc">Newest First</SelectItem>
+                  <SelectItem value="createdAt-asc">Oldest First</SelectItem>
+                  <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                  <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                  <SelectItem value="name-asc">Name: A-Z</SelectItem>
+                  <SelectItem value="name-desc">Name: Z-A</SelectItem>
+                </SelectContent>
+              </Select>
 
-              <Button variant="outline" size="sm" className="h-10 text-xs font-semibold rounded-xl border-border/60 gap-1.5 flex-1 md:flex-initial">
-                <ArrowUpDown className="size-3.5 text-muted-foreground" />
-                <span>Sort by: Featured</span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-10 text-xs font-semibold rounded-xl border-border/60 gap-1.5 md:hidden"
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                <SlidersHorizontal className="size-3.5 text-[#FF5500]" />
+                Filters
               </Button>
             </div>
           </div>
 
           {/* Category Pills */}
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pt-2 border-t border-border/40">
-            {CATEGORIES.map((category) => (
+            <button
+              onClick={() => handleCategoryChange("ALL")}
+              className={`text-xs font-bold px-3.5 py-1.5 rounded-lg transition-all shrink-0 whitespace-nowrap ${
+                selectedCategory === "ALL"
+                  ? "bg-[#FF5500] text-white shadow-md shadow-[#FF5500]/20"
+                  : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              All Products
+            </button>
+            {categories.map((cat) => (
               <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
+                key={cat._id}
+                onClick={() => handleCategoryChange(cat._id)}
                 className={`text-xs font-bold px-3.5 py-1.5 rounded-lg transition-all shrink-0 whitespace-nowrap ${
-                  selectedCategory === category
+                  selectedCategory === cat._id
                     ? "bg-[#FF5500] text-white shadow-md shadow-[#FF5500]/20"
                     : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
-                {category}
+                {cat.name}
               </button>
             ))}
           </div>
-        </div>
 
-        {/* ================= 3. CLEAN PRODUCT GRID WITH HIGH-HIERARCHY CARDS ================= */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
-          <AnimatePresence>
-            {filteredProducts.map((product) => (
-              <motion.div
-                key={product.id}
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-                className="group h-full"
+          {/* Subcategory Pills (when a category is selected) */}
+          {selectedCategory !== "ALL" && subcategories.length > 0 && (
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pt-2 border-t border-border/40">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider shrink-0">
+                Subcategory:
+              </span>
+              <button
+                onClick={() => handleSubcategoryChange("ALL")}
+                className={`text-[11px] font-semibold px-3 py-1 rounded-md transition-all shrink-0 whitespace-nowrap ${
+                  selectedSubcategory === "ALL"
+                    ? "bg-primary/10 text-primary"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                }`}
               >
-                <div className="h-full rounded-2xl bg-card border border-border/60 hover:border-[#FF5500]/40 transition-all duration-300 p-4 flex flex-col justify-between shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_35px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_12px_35px_rgba(0,0,0,0.4)]">
-                  
-                  <div>
-                    {/* Image Area with Crisp Visual Hierarchy */}
-                    <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-muted/40 mb-3.5 border border-border/30">
-                      <img 
-                        src={product.image} 
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                      />
-                      
-                      {/* Top Badges */}
-                      <div className="absolute top-2.5 left-2.5">
-                        <Badge className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-bold border border-border/60 shadow-sm px-2 py-0.5">
-                          {product.badge}
-                        </Badge>
-                      </div>
+                All
+              </button>
+              {subcategories.map((sub) => (
+                <button
+                  key={sub._id}
+                  onClick={() => handleSubcategoryChange(sub._id)}
+                  className={`text-[11px] font-semibold px-3 py-1 rounded-md transition-all shrink-0 whitespace-nowrap ${
+                    selectedSubcategory === sub._id
+                      ? "bg-primary/10 text-primary"
+                      : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  {sub.name}
+                </button>
+              ))}
+            </div>
+          )}
 
-                      <div className="absolute top-2.5 right-2.5">
-                        <span className="flex items-center gap-1 bg-black/70 backdrop-blur-md text-amber-400 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-white/10">
-                          <Star className="size-3 fill-amber-400" />
-                          {product.rating}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Category & Verified Status */}
-                    <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground mb-1.5">
-                      <span className="uppercase tracking-wide">{product.category}</span>
-                      <span className="flex items-center gap-1 text-emerald-500 font-bold text-[10px]">
-                        <CheckCircle2 className="size-3" /> Ready Stock
-                      </span>
-                    </div>
-
-                    {/* Product Title (Optimized Typography) */}
-                    <Link to={`/products/${product.id}`} className="block group/title">
-                      <h3 className="font-extrabold text-sm sm:text-base text-foreground group-hover/title:text-[#FF5500] transition-colors line-clamp-2 leading-tight">
-                        {product.name}
-                      </h3>
-                    </Link>
-
-                    {/* Tier Discount Micro-Text */}
-                    <p className="mt-1.5 text-[11px] font-semibold text-[#FF5500] bg-[#FF5500]/10 px-2 py-0.5 rounded w-fit">
-                      {product.tierDiscount}
-                    </p>
-                  </div>
-
-                  {/* Footer & Clear Conversion CTAs */}
-                  <div className="mt-5 pt-3.5 border-t border-border/40 space-y-3">
-                    
-                    {/* Price Hierarchy */}
-                    <div className="flex items-baseline justify-between">
-                      <div>
-                        <span className="text-lg font-black text-foreground">{product.price}</span>
-                        <span className="text-[11px] text-muted-foreground ml-1 font-medium">{product.unit}</span>
-                      </div>
-
-                      <span className="text-[10px] font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded font-bold">
-                        {product.moq}
-                      </span>
-                    </div>
-
-                    {/* High-Conversion Action Buttons */}
-                    <div className="grid grid-cols-2 gap-2 pt-1">
-                      <Button 
-                        asChild 
-                        size="sm" 
-                        variant="outline" 
-                        className="w-full text-xs font-bold h-9 rounded-xl border-border/70 hover:bg-muted/80 transition-all hover:border-[#FF5500]/30"
-                      >
-                        <Link to={`/rfq?product=${product.id}`} className="flex items-center justify-center gap-1.5">
-                          <FileText className="size-3.5 text-[#FF5500]" />
-                          <span>Get RFQ</span>
-                        </Link>
-                      </Button>
-
-                      <Button 
-                        asChild 
-                        size="sm" 
-                        className="w-full text-xs font-bold h-9 rounded-xl bg-[#FF5500] hover:bg-[#e04b00] text-white transition-all shadow-sm shadow-[#FF5500]/20"
-                      >
-                        <Link to={`/products/${product.id}`} className="flex items-center justify-center gap-1.5">
-                          <ShoppingCart className="size-3.5" />
-                          <span>Order</span>
-                        </Link>
-                      </Button>
-                    </div>
-
-                  </div>
-
+          {/* Advanced Filters (Mobile + Desktop) */}
+          {showFilters && (
+            <div className="pt-3 border-t border-border/40 grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div>
+                <label className="text-[10px] uppercase font-bold text-muted-foreground">
+                  Min Price
+                </label>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={priceRange.min}
+                  onChange={(e) => {
+                    setPriceRange({ ...priceRange, min: e.target.value });
+                    setPage(1);
+                  }}
+                  className="w-full mt-1 bg-background border border-border/60 rounded-lg px-3 py-2 text-xs"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase font-bold text-muted-foreground">
+                  Max Price
+                </label>
+                <input
+                  type="number"
+                  placeholder="100000"
+                  value={priceRange.max}
+                  onChange={(e) => {
+                    setPriceRange({ ...priceRange, max: e.target.value });
+                    setPage(1);
+                  }}
+                  className="w-full mt-1 bg-background border border-border/60 rounded-lg px-3 py-2 text-xs"
+                />
+              </div>
+              {hasActiveFilters && (
+                <div className="flex items-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearAllFilters}
+                    className="w-full text-xs"
+                  >
+                    <X className="size-3.5 mr-1.5" />
+                    Clear All
+                  </Button>
                 </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+              )}
+            </div>
+          )}
+
+          {/* Desktop Filter Toggle */}
+          <div className="hidden md:flex items-center justify-between pt-2 border-t border-border/40">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+            >
+              <SlidersHorizontal className="size-3.5" />
+              {showFilters ? "Hide Advanced Filters" : "Show Advanced Filters"}
+            </button>
+
+            {hasActiveFilters && (
+              <button
+                onClick={clearAllFilters}
+                className="text-xs font-semibold text-destructive hover:underline flex items-center gap-1"
+              >
+                <X className="size-3.5" />
+                Clear Filters
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* ================= 4. BOTTOM TRUST & RFQ CALLOUT ================= */}
-        <div className="mt-16 rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-blue-950/20 via-background to-[#FF5500]/10 backdrop-blur-2xl border border-primary/20 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+        {/* ================= 3. RESULT COUNT ================= */}
+        {meta && (
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Showing{" "}
+              <span className="font-bold text-foreground">
+                {products.length}
+              </span>{" "}
+              of <span className="font-bold text-foreground">{meta.total}</span>{" "}
+              products
+            </p>
+            {isFetching && (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            )}
+          </div>
+        )}
+
+        {/* ================= 4. PRODUCT GRID ================= */}
+        {products.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center mb-4">
+              <Package className="h-10 w-10 text-muted-foreground/50" />
+            </div>
+            <h3 className="text-lg font-bold">No products found</h3>
+            <p className="text-sm text-muted-foreground mt-1 max-w-md">
+              Try adjusting your search or filters to find what you're looking
+              for.
+            </p>
+            {hasActiveFilters && (
+              <Button
+                onClick={clearAllFilters}
+                variant="outline"
+                className="mt-4"
+              >
+                Clear All Filters
+              </Button>
+            )}
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
+              <AnimatePresence mode="popLayout">
+                {products.map((product: any) => (
+                  <motion.div
+                    key={product._id}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.3 }}
+                    className="group h-full"
+                  >
+                    <ProductCard
+                      product={product}
+                      getCategoryName={getCategoryName}
+                      getSubcategoryName={getSubcategoryName}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+
+            {/* ================= 5. PAGINATION ================= */}
+            {meta && meta.totalPage > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-12">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1 || isFetching}
+                  className="rounded-lg"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: meta.totalPage }, (_, i) => i + 1)
+                    .filter(
+                      (p) =>
+                        p === 1 ||
+                        p === meta.totalPage ||
+                        Math.abs(p - page) <= 1
+                    )
+                    .map((p, index, array) => (
+                      <div key={p} className="flex items-center gap-1">
+                        {index > 0 && array[index - 1] !== p - 1 && (
+                          <span className="px-2 text-muted-foreground">...</span>
+                        )}
+                        <Button
+                          variant={p === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setPage(p)}
+                          disabled={isFetching}
+                          className={`min-w-9 rounded-lg ${
+                            p === page ? "bg-primary text-white" : ""
+                          }`}
+                        >
+                          {p}
+                        </Button>
+                      </div>
+                    ))}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={page >= meta.totalPage || isFetching}
+                  className="rounded-lg"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ================= 6. RFQ CALLOUT ================= */}
+        <div className="mt-16 rounded-3xl p-6 sm:p-8 bg-linear-to-r from-blue-950/20 via-background to-[#FF5500]/10 backdrop-blur-2xl border border-primary/20 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
           <div className="space-y-1.5 max-w-xl">
             <h3 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
               Can't find the exact specification you need?
             </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground font-normal">
-              Our enterprise sourcing team can procure custom OEM parts directly from verified international factories.
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Our enterprise sourcing team can procure custom OEM parts directly
+              from verified international factories.
             </p>
           </div>
 
-          <Button 
-            asChild 
-            size="lg" 
+          <Button
+            asChild
+            size="lg"
             className="bg-[#FF5500] hover:bg-[#e04b00] text-white font-bold text-xs sm:text-sm px-6 h-11 rounded-xl shadow-md shrink-0"
           >
-            <Link to="/rfq">
-              Submit Custom BOQ / RFQ
-            </Link>
+            <Link to="/rfq">Submit Custom BOQ / RFQ</Link>
           </Button>
         </div>
-
       </div>
     </div>
   );
 }
+
+// ============================================
+// PRODUCT CARD COMPONENT
+// ============================================

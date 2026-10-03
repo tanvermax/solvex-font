@@ -1,7 +1,6 @@
 // routes/index.tsx
 import App from "@/App";
 import DashbordLayout from "@/components/layout/DashbordLayout";
-import About from "@/pages/About";
 import Home from "@/pages/Home/Home";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
@@ -25,6 +24,7 @@ import ContactPage from "@/pages/ContactUs/ContactPage";
 
 // 🔥 Import Route Guards
 import { ProtectedRoute, AdminRoute } from "@/components/ProtectedRoute";
+import About from "@/pages/AboutUs/About";
 
 const router = createBrowserRouter([
     // ===== PUBLIC ROUTES =====
@@ -33,10 +33,7 @@ const router = createBrowserRouter([
         errorElement: <DeluxeError />,
         path: "/",
         children: [
-            {
-                path: "about",
-                Component: About,
-            },
+           
             {
                 path: "shop",
                 Component: HomeShope,
@@ -52,6 +49,10 @@ const router = createBrowserRouter([
             {
                 path:"contactus",
                 Component:ContactPage
+            },
+            {
+                path:"aboutus",
+                Component:About
             },
             {
                 path:"sourcing",

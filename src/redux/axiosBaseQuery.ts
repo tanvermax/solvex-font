@@ -1,30 +1,37 @@
-import { axiosInstance } from '@/lib/axios'
-import type { BaseQueryFn } from '@reduxjs/toolkit/query'
-import type { AxiosRequestConfig, AxiosError } from 'axios'
+// src/redux/axiosBaseQuery.ts
+import { axiosInstance } from "@/lib/axios";
+import type { BaseQueryFn } from "@reduxjs/toolkit/query";
+import type { AxiosRequestConfig, AxiosError } from "axios";
 
 const axiosBaseQuery =
   (): BaseQueryFn<
     {
-      url: string
-      method?: AxiosRequestConfig['method']
-      data?: AxiosRequestConfig['data']
-      params?: AxiosRequestConfig['params']
-      headers?: AxiosRequestConfig['headers']
+      url: string;
+      method?: AxiosRequestConfig["method"];
+      data?: AxiosRequestConfig["data"];
+      body?: AxiosRequestConfig["data"];
+      params?: AxiosRequestConfig["params"];
+      headers?: AxiosRequestConfig["headers"];
     },
     unknown,
     unknown
   > =>
-  async ({ url, method, data, params, headers }) => {
+  async ({ url, method, data, body, params, headers }) => {
     try {
-      // 🔥 FIX: LocalStorage থেকে Token নিয়ে হেডারে পাস করা হচ্ছে
       const token = localStorage.getItem("token");
+      const requestData = data || body;
+
+      // 🔥 Check if FormData — don't set Content-Type manually
+      const isFormData = requestData instanceof FormData;
 
       const result = await axiosInstance({
         url: url,
         method,
-        data,
+        data: requestData,
         params,
         headers: {
+          // 🔥 FormData হলে Content-Type দেবেন না (browser auto set করবে)
+          ...(isFormData ? {} : { "Content-Type": "application/json" }),
           ...headers,
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },

@@ -39,6 +39,7 @@ const NAVIGATION_LINKS = [
   { href: "/industries", label: "Industries", icon: Building2 },
   { href: "/rfq", label: "Request Quote", icon: FileText },
   { href: "/contactus", label: "Contact Us", icon: ContactRoundIcon },
+  { href: "/aboutus", label: "About Us", icon: ContactRoundIcon },
   { href: "/ordertrack", label: "Track Shipment", icon: Truck },
 ] as const;
 

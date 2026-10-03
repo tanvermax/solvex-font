@@ -1,15 +1,5 @@
-import ProductAddForm from "./ProductAddForm";
-
+import ProductForm from "../Product/ProductForm";
 
 export default function AddProduct() {
-
-
-
-  return (
-
-
-    <div>
-        <ProductAddForm/>
-    </div>
-  )
+  return <ProductForm mode="add" />;
 }

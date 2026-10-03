@@ -1,0 +1,25 @@
+# public/robots.txt
+User-agent: *
+Allow: /
+
+# 🔥 Block admin/private routes
+Disallow: /admin/
+Disallow: /user/
+Disallow: /login
+Disallow: /register
+Disallow: /verify
+Disallow: /cart
+Disallow: /checkout
+
+# 🔥 Allow public content
+Allow: /products
+Allow: /categories
+Allow: /rfq
+Allow: /contactus
+Allow: /about
+
+# Sitemap
+Sitemap: https://solvexsupply.com/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1

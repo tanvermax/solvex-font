@@ -1,11 +1,10 @@
+// src/routes/adminSideberitem.ts
 import AddProduct from "@/components/layout/AdminLayoute/AddProduct/AddProduct";
 import AdminQuotationManagement from "@/components/layout/AdminLayoute/AdminRFQRequests/AdminRFQRequests";
 import AdminShipmentTracking from "@/components/layout/AdminLayoute/AdminShipmentTracking/AdminShipmentTracking";
-import Allproduct from "@/components/layout/AdminLayoute/Allproduct";
+import Allproduct from "@/components/layout/AdminLayoute/AddProduct/Allproduct";
 import OrderviewAdmin from "@/components/layout/AdminLayoute/OrderviewAdmin/OrderviewAdmin";
 import AdminOverviewPage from "@/components/layout/AdminLayoute/Overview/Adminoverviewpage";
-
-// 🔥 নতুন ইমপোর্ট - যেগুলো তৈরি করতে হবে
 import AdminOrderTrack from "@/components/layout/AdminLayoute/AdminOrderTrack/AdminOrderTrack";
 import AdminShipmentsPage from "@/components/layout/AdminLayoute/Shipment/AdminShipmentsPage";
 import AdminReportsPage from "@/components/layout/AdminLayoute/Reports/AdminReportsPage";
@@ -14,17 +13,16 @@ import AdminFleetManagementPage from "@/components/layout/AdminLayoute/Fleet/Adm
 import AdminRFQAnalyticsPage from "@/components/layout/AdminLayoute/RFQ/AdminRFQAnalyticsPage";
 import AdminQuotationTemplatesPage from "@/components/layout/AdminLayoute/RFQ/AdminQuotationTemplatesPage";
 import AdminRouteOptimizationPage from "@/components/layout/AdminLayoute/Fleet/AdminRouteOptimizationPage";
+import AdminUsersPage from "@/components/layout/AdminLayoute/User/AdminUsersPage";
+import AdminUserDetailsPage from "@/components/layout/AdminLayoute/User/AdminUserDetailsPage";
+import AdminCorporateBuyersPage from "@/components/layout/AdminLayoute/User/AdminCorporateBuyersPage";
+import AdminSettingsPage from "@/components/layout/AdminLayoute/Settings/AdminSettingsPage";
+import AdminRFQRequests from "@/components/layout/AdminLayoute/AdminRFQRequests/AdminRFQRequests";
+import AdminContactPage from "@/components/layout/AdminLayoute/Contact/AdminContactPage";
 
-// import AdminCategoriesPage from "@/pages/admin/Products/AdminCategoriesPage";
-// import AdminInventoryPage from "@/pages/admin/Products/AdminInventoryPage";
-// import AdminUserDetailsPage from "@/pages/admin/Users/AdminUserDetailsPage";
-// import AdminCorporateBuyersPage from "@/pages/admin/Users/AdminCorporateBuyersPage";
-// import AdminPaymentsPage from "@/pages/admin/Payments/AdminPaymentsPage";
-// import AdminInvoicesPage from "@/pages/admin/Payments/AdminInvoicesPage";
-// import AdminReportsPage from "@/pages/admin/Reports/AdminReportsPage";
-// import AdminSettingsPage from "@/pages/admin/Settings/AdminSettingsPage";
-// import AdminDiscountsPage from "@/pages/admin/Marketing/AdminDiscountsPage";
-// import AdminPromotionsPage from "@/pages/admin/Marketing/AdminPromotionsPage";
+// 🔥 NEW: Category & Subcategory Pages
+import CategoryListPage from "@/components/layout/AdminLayoute/Category/CategoryListPage";
+
 
 import type { ISidebarItem } from "@/types";
 
@@ -36,11 +34,9 @@ import {
   ClipboardList,
   Truck,
   FileSpreadsheet,
-  // 🔥 নতুন আইকন
   Users,
   UserCog,
   Building2,
-  FileText,
   BarChart3,
   Settings,
   Package,
@@ -49,18 +45,15 @@ import {
   Eye,
   Database,
   FileBarChart,
-  ShieldCheck,
   MessageSquare,
   Copy,
   TrendingUp,
-  Store,
+  Layers,        // 🔥 NEW
+  FolderTree,    // 🔥 NEW
 } from "lucide-react";
-import AdminUsersPage from "@/components/layout/AdminLayoute/User/AdminUsersPage";
-import AdminUserDetailsPage from "@/components/layout/AdminLayoute/User/AdminUserDetailsPage";
-import AdminCorporateBuyersPage from "@/components/layout/AdminLayoute/User/AdminCorporateBuyersPage";
-import AdminSettingsPage from "@/components/layout/AdminLayoute/Settings/AdminSettingsPage";
-import AdminRFQRequests from "@/components/layout/AdminLayoute/AdminRFQRequests/AdminRFQRequests";
-import AdminContactPage from "@/components/layout/AdminLayoute/Contact/AdminContactPage";
+import CategoryFormPage from "@/components/layout/AdminLayoute/Category/CategoryFormPage";
+import SubcategoryListPage from "@/components/layout/AdminLayoute/Subcategory/SubcategoryListPage";
+import SubcategoryFormPage from "@/components/layout/AdminLayoute/Subcategory/SubcategoryFormPage";
 
 export const adminSidebarItem: ISidebarItem[] = [
   // ============================================
@@ -79,7 +72,7 @@ export const adminSidebarItem: ISidebarItem[] = [
       {
         title: "Analytics",
         url: "/admin/analytics",
-        component: AdminOverviewPage, // TODO: Create AdminAnalyticsPage
+        component: AdminOverviewPage,
         icon: BarChart3,
       },
       {
@@ -91,12 +84,15 @@ export const adminSidebarItem: ISidebarItem[] = [
     ],
   },
 
+  // ============================================
+  // 💬 SECTION 2: MESSAGE MANAGEMENT
+  // ============================================
   {
     title: "Message Management",
     url: "#",
     items: [
       {
-        title: "message",
+        title: "Message",
         url: "/admin/message",
         component: AdminContactPage,
         icon: ClipboardList,
@@ -105,7 +101,7 @@ export const adminSidebarItem: ISidebarItem[] = [
   },
 
   // ============================================
-  // 📦 SECTION 2: ORDER MANAGEMENT
+  // 📦 SECTION 3: ORDER MANAGEMENT
   // ============================================
   {
     title: "Order Management",
@@ -126,14 +122,14 @@ export const adminSidebarItem: ISidebarItem[] = [
       {
         title: "Bulk Order Actions",
         url: "/admin/orders/bulk",
-        component: AdminOrderTrack, // TODO: Create AdminBulkOrdersPage
+        component: AdminOrderTrack,
         icon: Copy,
       },
     ],
   },
 
   // ============================================
-  // 🚚 SECTION 3: FLEET & SHIPMENT TRACKING
+  // 🚚 SECTION 4: FLEET & SHIPMENT TRACKING
   // ============================================
   {
     title: "Fleet & Logistics",
@@ -160,7 +156,7 @@ export const adminSidebarItem: ISidebarItem[] = [
       {
         title: "Route Optimization",
         url: "/admin/fleet/routes",
-        component: AdminRouteOptimizationPage, // TODO: Create AdminRouteOptimizationPage
+        component: AdminRouteOptimizationPage,
         icon: Route,
       },
       {
@@ -173,7 +169,7 @@ export const adminSidebarItem: ISidebarItem[] = [
   },
 
   // ============================================
-  // 📝 SECTION 4: RFQ MANAGEMENT
+  // 📝 SECTION 5: RFQ MANAGEMENT
   // ============================================
   {
     title: "RFQ & Quotations",
@@ -181,7 +177,7 @@ export const adminSidebarItem: ISidebarItem[] = [
     items: [
       {
         title: "RFQ Requests",
-        url: "/admin/quotations",  // 🔥 Main RFQ List
+        url: "/admin/quotations",
         component: AdminRFQRequests,
         icon: FileSpreadsheet,
       },
@@ -201,7 +197,7 @@ export const adminSidebarItem: ISidebarItem[] = [
   },
 
   // ============================================
-  // 🏷️ SECTION 5: PRODUCT & INVENTORY
+  // 🏷️ SECTION 6: PRODUCT & INVENTORY
   // ============================================
   {
     title: "Product Management",
@@ -219,35 +215,50 @@ export const adminSidebarItem: ISidebarItem[] = [
         component: AddProduct,
         icon: PlusCircle,
       },
-      // {
-      //   title: "Categories",
-      //   url: "/admin/categories",
-      //   component: AdminCategoriesPage,
-      //   icon: Layers,
-      // },
-      // {
-      //   title: "Inventory",
-      //   url: "/admin/inventory",
-      //   component: AdminInventoryPage,
-      //   icon: Boxes,
-      // },
+      // 🔥 NEW: Categories
+      {
+        title: "Categories",
+        url: "/admin/categories",
+        component: CategoryListPage,
+        icon: Layers,
+      },
+      {
+        title: "Add Category",
+        url: "/admin/categories/add",
+        component: CategoryFormPage,
+        icon: PlusCircle,
+      },
+      // 🔥 NEW: Subcategories
+      {
+        title: "Subcategories",
+        url: "/admin/subcategories",
+        component: SubcategoryListPage,
+        icon: FolderTree,
+      },
+      {
+        title: "Add Subcategory",
+        url: "/admin/subcategories/add",
+        component: SubcategoryFormPage,
+        icon: PlusCircle,
+      },
+      // Existing
       {
         title: "Bulk Import",
         url: "/admin/products/import",
-        component: Allproduct, // TODO: Create AdminBulkImportPage
+        component: Allproduct,
         icon: Database,
       },
       {
         title: "Product Reviews",
         url: "/admin/reviews",
-        component: Allproduct, // TODO: Create AdminReviewsPage
+        component: Allproduct,
         icon: MessageSquare,
       },
     ],
   },
 
   // ============================================
-  // 👥 SECTION 6: USER MANAGEMENT
+  // 👥 SECTION 7: USER MANAGEMENT
   // ============================================
   {
     title: "User Management",
@@ -271,159 +282,6 @@ export const adminSidebarItem: ISidebarItem[] = [
         component: AdminCorporateBuyersPage,
         icon: Building2,
       },
-      
-  //     {
-  //       title: "User Analytics",
-  //       url: "/admin/users/analytics",
-  //       component: AdminUsersPage, // TODO: Create AdminUserAnalyticsPage
-  //       icon: TrendingUp,
-  //     },
     ],
   },
-
-  // ============================================
-  // 💰 SECTION 7: PAYMENTS & INVOICES
-  // ============================================
-  // {
-  //   title: "Payments & Invoices",
-  //   url: "#",
-  //   items: [
-  //     {
-  //       title: "Transactions",
-  //       url: "/admin/payments",
-  //       component: AdminPaymentsPage,
-  //       icon: CreditCard,
-  //     },
-  //     {
-  //       title: "Invoices",
-  //       url: "/admin/invoices",
-  //       component: AdminInvoicesPage,
-  //       icon: Receipt,
-  //     },
-  //     {
-  //       title: "Refund Management",
-  //       url: "/admin/refunds",
-  //       component: AdminPaymentsPage, // TODO: Create AdminRefundsPage
-  //       icon: RefreshCw,
-  //     },
-  //   ],
-  // },
-
-  // ============================================
-  // 📊 SECTION 8: REPORTS
-  // ============================================
-
-
-
-
-
-  // {
-  //   title: "Reports & Analytics",
-  //   url: "#",
-  //   items: [
-  //     {
-  //       title: "Sales Report",
-  //       url: "/admin/reports/sales",
-  //       component: AdminReportsPage,
-  //       icon: TrendingUp,
-  //     },
-  //     {
-  //       title: "Product Report",
-  //       url: "/admin/reports/products",
-  //       component: AdminReportsPage,
-  //       icon: Store,
-  //     },
-  //     {
-  //       title: "Shipment Report",
-  //       url: "/admin/reports/shipments",
-  //       component: AdminReportsPage,
-  //       icon: Truck,
-  //     },
-  //     {
-  //       title: "Financial Report",
-  //       url: "/admin/reports/financial",
-  //       component: AdminReportsPage,
-  //       icon: FileBarChart,
-  //     },
-  //   ],
-  // },
-
-  // ============================================
-  // 🎯 SECTION 9: MARKETING & PROMOTIONS
-  // ============================================
-  // {
-  //   title: "Marketing & Promotions",
-  //   url: "#",
-  //   items: [
-  //     {
-  //       title: "Discounts & Coupons",
-  //       url: "/admin/discounts",
-  //       component: AdminDiscountsPage,
-  //       icon: Tag,
-  //     },
-  //     {
-  //       title: "Promotions",
-  //       url: "/admin/promotions",
-  //       component: AdminPromotionsPage,
-  //       icon: Megaphone,
-  //     },
-  //     {
-  //       title: "Banners",
-  //       url: "/admin/banners",
-  //       component: AdminPromotionsPage, // TODO: Create AdminBannersPage
-  //       icon: Image,
-  //     },
-  //     {
-  //       title: "Email Campaigns",
-  //       url: "/admin/campaigns",
-  //       component: AdminPromotionsPage, // TODO: Create AdminCampaignsPage
-  //       icon: Mail,
-  //     },
-  //     {
-  //       title: "Newsletter",
-  //       url: "/admin/newsletter",
-  //       component: AdminPromotionsPage, // TODO: Create AdminNewsletterPage
-  //       icon: BellRing,
-  //     },
-  //   ],
-  // },
-
-  // ============================================
-  // ⚙️ SECTION 10: SYSTEM SETTINGS
-  // ============================================
-
-
-
-
-
-  // {
-  //   title: "System Settings",
-  //   url: "#",
-  //   items: [
-  //     {
-  //       title: "General Settings",
-  //       url: "/admin/settings",
-  //       component: AdminSettingsPage,
-  //       icon: Settings,
-  //     },
-  //     // {
-  //     //   title: "Shipping Settings",
-  //     //   url: "/admin/settings/shipping",
-  //     //   component: AdminSettingsPage, // TODO: Create AdminShippingSettingsPage
-  //     //   icon: Truck,
-  //     // },
-  //     // {
-  //     //   title: "Tax Settings",
-  //     //   url: "/admin/settings/tax",
-  //     //   component: AdminSettingsPage, // TODO: Create AdminTaxSettingsPage
-  //     //   icon: Receipt,
-  //     // },
-  //     // {
-  //     //   title: "Security",
-  //     //   url: "/admin/settings/security",
-  //     //   component: AdminSettingsPage, // TODO: Create AdminSecurityPage
-  //     //   icon: ShieldCheck,
-  //     // },
-  //   ],
-  // },
 ];
