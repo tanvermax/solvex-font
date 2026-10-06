@@ -19,7 +19,7 @@ const loadAuthFromStorage = (): Partial<AuthState> => {
     
     if (token && userStr) {
       const user = JSON.parse(userStr);
-      console.log("✅ Auth loaded from localStorage:", { user, token });
+      // console.log("✅ Auth loaded from localStorage:", { user, token });
       return { 
         user, 
         token, 
@@ -45,7 +45,7 @@ const initialState: AuthState = {
   ...loadAuthFromStorage(),
 };
 
-console.log("🔍 Initial Auth State from localStorage:", initialState);
+// console.log("🔍 Initial Auth State from localStorage:", initialState);
 
 const authSlice = createSlice({
   name: 'auth',

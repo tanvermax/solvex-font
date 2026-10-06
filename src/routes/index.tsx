@@ -25,6 +25,8 @@ import ContactPage from "@/pages/ContactUs/ContactPage";
 // 🔥 Import Route Guards
 import { ProtectedRoute, AdminRoute } from "@/components/ProtectedRoute";
 import About from "@/pages/AboutUs/About";
+import AdminShipmentDetailsPage from "@/components/layout/AdminLayoute/Shipment/AdminShipmentDetailsPage";
+import AdminOrderDetailsPage from "@/components/layout/AdminLayoute/Order/components/AdminOrderDetailsPage";
 
 const router = createBrowserRouter([
     // ===== PUBLIC ROUTES =====
@@ -87,6 +89,16 @@ const router = createBrowserRouter([
                 path: "/admin/products/edit/:id",
                 Component: EditProduct,
             }
+            ,
+            {
+                path: "/admin/shipments/:id",
+        Component: AdminShipmentDetailsPage,
+            },
+            {
+      path: "/admin/orders/:id",
+      Component: AdminOrderDetailsPage,
+    },
+
         ]
     },
 
@@ -100,6 +112,8 @@ const router = createBrowserRouter([
                 element: <DashbordLayout />,  // Use DashbordLayout for admin
                 children: [...genarateRoutes(adminSidebarItem)],
             }
+
+            
         ],
     },
 

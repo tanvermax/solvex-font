@@ -18,6 +18,7 @@ export interface User {
   updatedAt: string;
 }
 
+
 export const adminApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // ==========================================
@@ -51,7 +52,7 @@ export const adminApi = baseApi.injectEndpoints({
     // সকল শিপমেন্ট ট্র্যাকিং লিস্ট দেখার জন্য
     getAllShipments: builder.query({
       query: (params) => ({
-        url: "/admin/shipments",
+        url: "/shipment/all",
         method: "GET",
         params,
       }),
@@ -83,13 +84,41 @@ export const adminApi = baseApi.injectEndpoints({
     // ==========================================
 
     // ড্যাশবোর্ডের ওভারভিউ ডাটার জন্য (Total Revenue, Total RFQ, Active Shipments)
-    getAdminDashboardStats: builder.query({
-      query: () => ({
-        url: "/admin/analytics/overview",
-        method: "GET",
-      }),
-      providesTags: ["USER", "QUOTATION", "SHIPMENT"],
-    }),
+    // src/redux/features/admin/admin.api.ts
+
+getAdminDashboardStats: builder.query<
+  {
+    success: boolean;
+    message: string;
+    data: {
+      overview: {
+        totalOrders: number;
+        pendingOrders: number;
+        processingOrders: number;
+        deliveredOrders: number;
+        completedOrders: number;
+        cancelledOrders: number;
+        totalRevenue: number;
+        pendingQuotations: number;
+        totalProducts: number;
+        totalUsers: number;
+        corporateBuyers: number;
+        activeShipments: number;
+        completionRate: number;
+      };
+      revenueTrend: { month: string; revenue: number; orders: number }[];
+      recentOrders: any[];
+      recentShipments: any[];
+    };
+  },
+  void
+>({
+  query: () => ({
+    url: "/analytics/dashboard-stats",
+    method: "GET",
+  }),
+  providesTags: ["DASHBOARD_STATS", "ORDER", "SHIPMENT", "RFQ"],
+}),
 
   getAllUsers: builder.query<
       { success: boolean; message: string; data: User[] },
@@ -165,7 +194,10 @@ export const adminApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["USER"],
     }),
+
+    
   })
+  
 })
 
 export const {

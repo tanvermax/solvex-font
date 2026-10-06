@@ -41,6 +41,8 @@ export default function AdminShipmentTracking() {
 
   const shipments = shipmentData?.data || [];
 
+
+  console.log(useGetAllShipmentsQuery);
   return (
     <div className="p-6 space-y-6">
       <div>

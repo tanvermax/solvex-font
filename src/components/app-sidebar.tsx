@@ -49,15 +49,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const authUser = useAppSelector((state) => state.auth.user);
 
-  console.log("authUser",authUser);
+  // console.log("authUser",authUser);
 
   // API Response থাকলে সেটা নিবে, তা না হলে Redux Auth State নিবে
   const currentUser = userData?.data || authUser;
   const currentRole = currentUser?.role;
 
 
-  console.log("currentUser",currentUser);
-  console.log("currentRole",currentRole);
+  // console.log("currentUser",currentUser);
+  // console.log("currentRole",currentRole);
 
   const data = React.useMemo(() => ({
     navMain: getSidebarItems(currentRole) || [],
