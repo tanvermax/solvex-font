@@ -29,129 +29,127 @@ import AdminShipmentDetailsPage from "@/components/layout/AdminLayoute/Shipment/
 import AdminOrderDetailsPage from "@/components/layout/AdminLayoute/Order/components/AdminOrderDetailsPage";
 
 const router = createBrowserRouter([
-    // ===== PUBLIC ROUTES =====
-    {
-        Component: App,
-        errorElement: <DeluxeError />,
+  // ===== PUBLIC ROUTES =====
+  {
+    Component: App,
+    errorElement: <DeluxeError />,
+    path: "/",
+    children: [
+      {
+        path: "shop",
+        Component: HomeShope,
+      },
+      {
+        path: "cart",
+        Component: CartPage,
+      },
+      {
+        path: "products",
+        Component: ProductsPage,
+      },
+      {
+        path: "contactus",
+        Component: ContactPage,
+      },
+      {
+        path: "aboutus",
+        Component: About,
+      },
+      {
+        path: "sourcing",
+        Component: SourcingPage,
+      },
+      {
+        path: "industries",
+        Component: IndustriesPage,
+      },
+      {
+        path: "rfq",
+        Component: RFQPage,
+      },
+      {
         path: "/",
-        children: [
-           
-            {
-                path: "shop",
-                Component: HomeShope,
-            }, 
-            {
-                path: "cart",
-                Component: CartPage,
-            },
-            {
-                path:"products",
-                Component:ProductsPage
-            },
-            {
-                path:"contactus",
-                Component:ContactPage
-            },
-            {
-                path:"aboutus",
-                Component:About
-            },
-            {
-                path:"sourcing",
-                Component:SourcingPage
-            },
-            {
-                path:"industries",
-                Component:IndustriesPage
-            },
-            {
-                path:"rfq",
-                Component:RFQPage
-            },
-            {
-                path: "/",
-                Component: Home,
-            },
-            {
-                path:"alldata/:id",
-                Component:ProductDetails
-            },
-            {
-                path:"ordertrack",
-                Component:TrackShipmentPage
-            },
-            {
-                path:"help",
-                Component:Help
-            },
-            // 🔥 Edit Product - Admin only (but we'll protect it with AdminRoute)
-            {
-                path: "/admin/products/edit/:id",
-                Component: EditProduct,
-            }
-            ,
-            {
-                path: "/admin/shipments/:id",
+        Component: Home,
+      },
+      {
+        path: "alldata/:id",
+        Component: ProductDetails,
+      },
+      {
+        path: "ordertrack",
+        Component: TrackShipmentPage,
+      },
+      {
+        path: "help",
+        Component: Help,
+      },
+      {
+        path: "/admin/products/edit/:id",
+        Component: EditProduct,
+      },
+      {
+        path: "/admin/shipments/:id",
         Component: AdminShipmentDetailsPage,
-            },
-            {
-      path: "/admin/orders/:id",
-      Component: AdminOrderDetailsPage,
-    },
+      },
+      {
+        path: "/admin/orders/:id",
+        Component: AdminOrderDetailsPage,
+      },
+      {
+        path: "products/:identifier",       
+        Component: ProductDetails,
+      }
+    ],
+  },
 
-        ]
-    },
+  // ===== 🔥 ADMIN ROUTES (Protected with AdminRoute) =====
+  {
+    path: "/admin",
+    element: <AdminRoute />, // 🔥 Admin Guard - only ADMIN/SUPER_ADMIN can access
+    errorElement: <DeluxeError />,
+    children: [
+      {
+        element: <DashbordLayout />, // Use DashbordLayout for admin
+        children: [...genarateRoutes(adminSidebarItem)],
+      },
+    ],
+  },
 
-    // ===== 🔥 ADMIN ROUTES (Protected with AdminRoute) =====
-    {
-        path: "/admin",
-        element: <AdminRoute />,  // 🔥 Admin Guard - only ADMIN/SUPER_ADMIN can access
-        errorElement: <DeluxeError />,
-        children: [
-            {
-                element: <DashbordLayout />,  // Use DashbordLayout for admin
-                children: [...genarateRoutes(adminSidebarItem)],
-            }
+  // ===== 🔥 USER ROUTES (Protected with ProtectedRoute) =====
+  {
+    path: "/user",
+    element: <ProtectedRoute />, // 🔥 General Auth Guard - any logged in user
+    errorElement: <DeluxeError />,
+    children: [
+      {
+        element: <DashbordLayout />, // Use DashbordLayout for user
+        children: [...genarateRoutes(userSidebarItem)],
+      },
+    ],
+  },
 
-            
-        ],
-    },
+  // ===== 🔥 AUTH ROUTES (Public) =====
+  {
+    Component: Login,
+    path: "/login",
+    errorElement: <DeluxeError />,
+  },
+  {
+    Component: Register,
+    path: "/register",
+    errorElement: <DeluxeError />,
+  },
+  {
+    Component: Veryfy,
+    path: "/verify",
+    errorElement: <DeluxeError />,
+  },
 
-    // ===== 🔥 USER ROUTES (Protected with ProtectedRoute) =====
-    {
-        path: "/user",
-        element: <ProtectedRoute />,  // 🔥 General Auth Guard - any logged in user
-        errorElement: <DeluxeError />,
-        children: [
-            {
-                element: <DashbordLayout />,  // Use DashbordLayout for user
-                children: [...genarateRoutes(userSidebarItem)],
-            }
-        ],
-    },
-
-    // ===== 🔥 AUTH ROUTES (Public) =====
-    {
-        Component: Login,
-        path: "/login",
-        errorElement: <DeluxeError />,
-    },
-    {
-        Component: Register,
-        path: "/register",
-        errorElement: <DeluxeError />,
-    },
-    {
-        Component: Veryfy,
-        path: "/verify",
-        errorElement: <DeluxeError />,
-    },
-
-    // ===== 🔥 REDIRECT: Unknown routes to home =====
-    {
-        path: "*",
-        element: <Navigate to="/" replace />,
-    },
+  // ===== 🔥 REDIRECT: Unknown routes to home =====
+  {
+    path: "*",
+    element: <Navigate to="/" replace />,
+  },
 ]);
 
 export default router;

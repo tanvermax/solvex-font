@@ -14,7 +14,7 @@ export default function CommonLayout({ children }: IProps) {
       <div className="sticky  top-0 z-40 container mx-auto  px-4 md:px-6 bg-white dark:bg-[#011226]">
         <Navber />
       </div>
-      <div className=" b container  mx-auto">
+      <div className="  container  mx-auto">
         <ToastContainer />
         {children}
         <Toaster />
